@@ -1,0 +1,191 @@
+---
+title: "Introduction to land4health"
+author: "Gabriel Carrasco"
+format: html
+editor: visual
+---
+
+::: {.cell}
+
+```{=html}
+<div style="display: flex; align-items: center; border: 1px solid #ccc; padding: 1em; border-radius: 8px;">
+  <img src="https://raw.githubusercontent.com/harmonize-tools/land4health/refs/heads/main/man/figures/logo.png" alt="land4health" width="100" style="margin-right: 1em;">
+  <div>
+    <p><strong>land4health: Remote Sensing Metrics for Spatial Health Analysis</strong></p>
+    <p>Calculate and extract remote sensing metrics for spatial health analysis 🛰️. This package offers R users a quick and easy way to obtain areal or zonal statistics of key indicators and covariates, ideal for modeling infectious diseases 🦠 within the framework of spatial epidemiology 🏥.</p>
+  </div>
+</div>
+```
+
+## Team
+The development team from **Harmonize Perú** is composed of:
+
+```{=html}
+<div style="display: flex; justify-content: center; gap: 2em; margin-top: 1em;">
+
+  <div style="text-align: center;">
+    <img src="https://avatars.githubusercontent.com/u/23284899?s=400&u=a4f50618c8abfb1f7d334db5c9cabffbb4c3f5c7&v=4" alt="Miembro 1" style="border-radius: 50%; width: 100px; height: 100px;">
+    <p><strong>Antony Barja</strong></p>
+  </div>
+
+  <div style="text-align: center;">
+    <img src="https://avatars.githubusercontent.com/u/40729029?v=4" alt="Miembro 2" style="border-radius: 50%; width: 100px; height: 100px;">
+    <p><strong>Yomali Ferreyra</strong></p>
+  </div>
+
+  <div style="text-align: center;">
+    <img src="https://avatars.githubusercontent.com/u/39299104?v=4" alt="Miembro 3" style="border-radius: 50%; width: 100px; height: 100px;">
+    <p><strong>Diego Villa</strong></p>
+  </div>
+
+</div>
+```
+
+
+## Backend - Main Dependencies
+
+The **land4health** package relies on eight core backend packages. Among them, three stand out:
+
+```{=html}
+<div style="display: flex; align-items: start; margin-bottom: 1em;">
+  <img src="https://user-images.githubusercontent.com/16768318/118376965-5f7dca80-b5cb-11eb-9a82-47876680a3e6.png" alt="rgee" style="width: 50px; margin-right: 1em;">
+  <div>
+    <strong>rgee</strong>: Serves as the interface between R and Google Earth Engine, enabling direct access to and processing of satellite imagery within R.
+  </div>
+</div>
+
+<div style="display: flex; align-items: start; margin-bottom: 1em;">
+  <img src="https://raw.githubusercontent.com/r-spatial/sf/main/man/figures/logo.png" alt="sf" style="width: 50px; margin-right: 1em;">
+  <div>
+    <strong>sf</strong>: Used for the management and analysis of vector data, especially polygon geometries.
+  </div>
+</div>
+
+<div style="display: flex; align-items: start; margin-bottom: 1em;">
+  <img src="https://raw.githubusercontent.com/r-lib/progress/main/man/figures/logo.png" alt="progress" style="width: 70px; height: 40px; margin-right: 1em;">
+  <div>
+    <strong>progress</strong>: Enhances the user experience by displaying visual progress indicators during processing tasks.
+  </div>
+</div>
+```
+In this first version, **rgee** was chosen as the primary package for connecting to [Google Earth Engine](https://earthengine.google.com/), complemented by **sf** and **progress** for efficient spatial data handling and a smoother user interaction.
+
+## Road of deveploment
+
+![](C:/Users/USER/Documents/road.jpg)
+
+
+## What You Can Do with the land4health Package ? 
+
+When launching land4health for the first time, a welcome message appears introducing the purpose of the package, the available indicators, and how to learn more.
+
+It also includes a brief overview of the Harmonize project and provides a link to the official website, encouraging users to further explore the initiative and its applications in environmental and spatial health.
+
+```{r message=FALSE, warning=FALSE}
+library(land4health)
+```
+
+```r
+── Welcome to land4health ────────────────────────────────────────────────────────────────
+A tool of Harmonize Project to calculate and extract Remote Sensing Metrics for Spatial
+Health Analysis. Currently,`land4health` supports metrics in the following categories:
+• Accesibility
+• Climate
+• Enviroment
+• and more!
+For a complete list of available metrics, use the `l4h_list_metrics()` function.
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Attaching core land4health packages:
+→ rgee v1.1.7
+→ sf v1.0.21
+```
+
+All functions in the package follow a consistent naming convention, starting with the prefix `l4h_*`, making them easy to identify and use.
+
+For instance, the function `l4h_list_metrics()` allows users to retrieve the full list of available metrics.
+
+All examples keep  `open_in_browser = FALSE ` to avoid side effects. However, setting  `open_in_browser = TRUE ` will automatically open a new tab in your default web browser and redirect you to the official source page of the selected indicator, allowing you to explore more information about it.
+
+```{r}
+## 1  Show the full inventory (truncated to 10 rows).
+l4h_list_metrics()
+
+## 2  Filter by category (“Human intervention”).
+l4h_list_metrics(category = "Human intervention")
+
+## 3  Filter by provider (“WorldPop”) and store the result.
+worldpop_tbl <- l4h_list_metrics(provider = "WorldPop")
+head(worldpop_tbl)
+```
+
+
+With land4health, you can calculate the vegetation cover loss in square kilometers for any polygon of interest using the `l4h_forest_loss()` function.
+
+
+```{r message=FALSE, warning=FALSE}
+library(land4health)
+library(geodata)
+library(ggplot2)
+library(dplyr)
+ee_Initialize()
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Download Brazil's boundaries as an object sf
+brasil_sf <- geodata::gadm(country = "BRA", level = 1, path = tempdir()) |> 
+  st_as_sf()
+```
+
+```{r message=FALSE, warning=FALSE}
+# Loss of vegetation cover (2001-2023)
+forest_loss <-  l4h_forest_loss(
+  from = 2001,
+  to = 2023,
+  region = brasil_sf,
+  sf = TRUE)
+```
+```r
+Extracting data [>--------]  15% | 4/27 | ETA: 25m
+```
+```{r message=FALSE, warning=FALSE, fig.height=14, fig.width=15}
+ggplot(data = forest_loss) +
+  geom_sf(aes(fill = value), color = NA) +
+  scale_fill_gradientn(name = "Forest loss mean \n(km²)",colours = c("#DC8665","#138086","#534666","#CD7672","#eeb462")) +
+  theme_minimal(base_size = 15) +
+  facet_wrap(date ~ .)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Download Colombia's boundaries as an object sf
+colombia_sf <- geodata::gadm(country = "COL", level = 1, path = tempdir()) |> 
+  st_as_sf()
+```
+
+```{r}
+#  Evapotranspiration 
+sebal_8d <- l4h_sebal_modis(
+  from   = "2020-01-01",
+  to     = "2020-12-31",
+  region = colombia_sf
+)
+```
+```{r message=FALSE, warning=FALSE, fig.height=14, fig.width=15}
+sebal_jan <- sebal_8d %>%
+  filter(date >= as.Date("2020-01-01") & date <= as.Date("2020-01-31"))
+
+ggplot(sebal_jan) +
+  geom_sf(aes(fill = value), color = NA) +
+  scale_fill_viridis_c(name = "ETP (mm/8d)") +
+  theme_minimal(base_size = 15) +
+  facet_wrap(date ~ .)
+```
+
+
+## Explore land4health Documentation
+
+<iframe src="https://harmonize-tools.github.io/land4health/index.html" width="100%" height="700px" style="border: none;">
+  Your browser does not support iframes.
+</iframe>
